@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -17,12 +19,20 @@ public class TestController {
 
     private final SimpMessagingTemplate template;
 
-    @SneakyThrows
     @PostMapping("/hello")
-    public void greeting(@RequestBody final HelloMessage helloMessage) {
+    public String greeting(@RequestBody final HelloMessage helloMessage) {
         log.info("Received message: {}", helloMessage);
+        final UUID uuid = UUID.randomUUID();
+        final String queue = "/queues/" + uuid;
+        new Thread(() -> publishToQueue(queue, helloMessage.getName())).start();
+        return queue;
+    }
+
+    @SneakyThrows
+    private void publishToQueue(final String queue, final String name) {
         Thread.sleep(1000);
-        template.convertAndSend("/topic/greetings", new Greeting("Hello " + helloMessage.getName() + "!"));
+        log.info("Publishing to {}.", queue);
+        template.convertAndSend(queue, new Greeting("Hello " + name + "!"));
     }
 
 }
