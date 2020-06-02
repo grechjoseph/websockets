@@ -15,7 +15,7 @@ function setConnected(connected) {
 */
 
 function connectDirect(queue) {
-    var socket = new SockJS('/gs-guide-websocket');
+    var socket = new SockJS('/my-websocket');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
         //setConnected(true);
